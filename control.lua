@@ -1,4 +1,3 @@
-local radius = 10
 local tick_interval = 60
 
 local function transfer_items_from_container_to_wagons(containers, wagons)
@@ -29,6 +28,33 @@ local function transfer_items_from_container_to_wagons(containers, wagons)
     end
 end
 
+local function get_wagons_and_containers(load_station)
+    local train_stops = {}
+    local containers = {}
+    local wagons = {}
+
+    local connected_entities = load_station.neighbours["green"]
+
+    for _, connected_entity in pairs(connected_entities) do
+        if connected_entity.type == "train-stop" then
+            table.insert(train_stops, connected_entity)
+        elseif connected_entity.type == "container" then
+            table.insert(containers, connected_entity)
+        end
+    end
+
+    for _, train_stop in pairs(train_stops) do
+        local train = train_stop.get_stopped_train()
+        if train then
+            for _, wagon in pairs(train.cargo_wagons) do
+                table.insert(wagons, wagon)
+            end
+        end
+    end
+
+    return wagons, containers
+end
+
 local function on_nth_tick(event)
     local surfaces = game.surfaces
 
@@ -36,34 +62,8 @@ local function on_nth_tick(event)
         local small_electric_poles = surface.find_entities_filtered{name = "small-electric-pole"}
 
         for _, small_electric_pole in pairs(small_electric_poles) do
-            local center_position = small_electric_pole.position
 
-
-            local connected_entities = small_electric_pole.neighbours["green"]
-            
-            local train_stops = {}
-            for _, connected_entity in pairs(connected_entities) do
-                if connected_entity.type == "train-stop" then
-                    table.insert(train_stops, connected_entity)
-                end
-            end
-            
-            local containers = {}
-            for _, connected_entity in pairs(connected_entities) do
-                if connected_entity.type == "container" then
-                    table.insert(containers, connected_entity)
-                end
-            end
-
-            local wagons = {}
-            for _, train_stop in pairs(train_stops) do
-                local train = train_stop.get_stopped_train()
-                if train then
-                    for _, wagon in pairs(train.cargo_wagons) do
-                        table.insert(wagons, wagon)
-                    end
-                end
-            end
+            local wagons, containers = get_wagons_and_containers(small_electric_pole)
 
             transfer_items_from_container_to_wagons(containers, wagons)
         end
