@@ -38,20 +38,22 @@ local function on_nth_tick(event)
         for _, small_electric_pole in pairs(small_electric_poles) do
             local center_position = small_electric_pole.position
 
-            local train_stops = {}
 
             local connected_entities = small_electric_pole.neighbours["green"]
-
+            
+            local train_stops = {}
             for _, connected_entity in pairs(connected_entities) do
                 if connected_entity.type == "train-stop" then
                     table.insert(train_stops, connected_entity)
                 end
             end
-
-            local containers = surface.find_entities_filtered{
-                area = {{center_position.x - radius, center_position.y - radius}, {center_position.x + radius, center_position.y + radius}},
-                type = "container"
-            }
+            
+            local containers = {}
+            for _, connected_entity in pairs(connected_entities) do
+                if connected_entity.type == "container" then
+                    table.insert(containers, connected_entity)
+                end
+            end
 
             local wagons = {}
             for _, train_stop in pairs(train_stops) do
