@@ -2,58 +2,53 @@ local tick_interval = 60
 
 local function transfer_items_from_containers_to_wagons(containers, wagons)
     for _, container in pairs(containers) do
-        -- remove if
-        -- if container.type == "container" then 
-            local items = container.get_inventory(defines.inventory.chest).get_contents()
+        local items = container.get_inventory(defines.inventory.chest).get_contents()
 
-            for item, count in pairs(items) do
-                local total_inserted = 0
+        for item, count in pairs(items) do
+            local total_inserted = 0
 
-                for _, wagon in pairs(wagons) do
-                    if wagon.type == "cargo-wagon" then
-                        local inserted = wagon.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count - total_inserted})
+            for _, wagon in pairs(wagons) do
+                if wagon.type == "cargo-wagon" then
+                    local inserted = wagon.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count - total_inserted})
 
-                        total_inserted = total_inserted + inserted
+                    total_inserted = total_inserted + inserted
 
-                        if total_inserted == count then
-                            break
-                        end
+                    if total_inserted == count then
+                        break
                     end
                 end
-
-                if total_inserted > 0 then
-                    container.get_inventory(defines.inventory.chest).remove({name = item, count = total_inserted})
-                end
             end
-        -- end
+
+            if total_inserted > 0 then
+                container.get_inventory(defines.inventory.chest).remove({name = item, count = total_inserted})
+            end
+        end
     end
 end
 
 local function transfer_items_from_wagons_to_containers(containers, wagons)
     for _, wagon in pairs(wagons) do
-        -- if wagon.type == "cargo-wagon" then
-            local items = wagon.get_inventory(defines.inventory.cargo_wagon).get_contents()
+        local items = wagon.get_inventory(defines.inventory.cargo_wagon).get_contents()
 
-            for item, count in pairs(items) do
-                local total_inserted = 0
+        for item, count in pairs(items) do
+            local total_inserted = 0
 
-                for _, container in pairs(containers) do
-                    if container.type == "container" then
-                        local inserted = container.get_inventory(defines.inventory.chest).insert({name = item, count = count - total_inserted})
+            for _, container in pairs(containers) do
+                if container.type == "container" then
+                    local inserted = container.get_inventory(defines.inventory.chest).insert({name = item, count = count - total_inserted})
 
-                        total_inserted = total_inserted + inserted
+                    total_inserted = total_inserted + inserted
 
-                        if total_inserted == count then
-                            break
-                        end
+                    if total_inserted == count then
+                        break
                     end
                 end
-
-                if total_inserted > 0 then
-                    wagon.get_inventory(defines.inventory.cargo_wagon).remove({name = item, count = total_inserted})
-                end
             end
-        -- end
+
+            if total_inserted > 0 then
+                wagon.get_inventory(defines.inventory.cargo_wagon).remove({name = item, count = total_inserted})
+            end
+        end
     end
 end
 
