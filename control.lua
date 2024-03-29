@@ -27,21 +27,27 @@ local function transfer_items_from_containers_to_wagons(containers, wagons)
 end
 
 local function transfer_items_from_wagons_to_containers(containers, wagons)
+    device_count = #containers
     for _, wagon in pairs(wagons) do
         local items = wagon.get_inventory(defines.inventory.cargo_wagon).get_contents()
 
         for item, count in pairs(items) do
             local total_inserted = 0
+            local count_per_device = math.floor(count / device_count)
+            local remainder = count % device_count
 
-            for _, container in pairs(containers) do
-                if container.type == "container" then
-                    local inserted = container.get_inventory(defines.inventory.chest).insert({name = item, count = count - total_inserted})
+            for i, container in ipairs(containers) do
+                if i > device_count then
+                    break
+                end
 
-                    total_inserted = total_inserted + inserted
+                local to_insert = count_per_device + ((i == 1) and remainder or 0)
+                local inserted = container.get_inventory(defines.inventory.chest).insert({name = item, count = to_insert})
 
-                    if total_inserted == count then
-                        break
-                    end
+                total_inserted = total_inserted + inserted
+
+                if total_inserted == count then
+                    break
                 end
             end
 
