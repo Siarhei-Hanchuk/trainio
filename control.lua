@@ -24,15 +24,25 @@ local function on_nth_tick(event)
                 if container.type == "container" then
                     local items = container.get_inventory(defines.inventory.chest).get_contents()
 
-                    for _, wagon in pairs(wagons) do
-                        if wagon.type == "cargo-wagon" then
-                            for item, count in pairs(items) do
-                                wagon.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count})
+                    for item, count in pairs(items) do
+                        local total_inserted = 0
+
+                        for _, wagon in pairs(wagons) do
+                            if wagon.type == "cargo-wagon" then
+                                local inserted = wagon.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count - total_inserted})
+
+                                total_inserted = total_inserted + inserted
+
+                                if total_inserted == count then
+                                    break
+                                end
                             end
                         end
-                    end
 
-                    container.clear_items_inside()
+                        if total_inserted > 0 then
+                            container.get_inventory(defines.inventory.chest).remove({name = item, count = total_inserted})
+                        end
+                    end
                 end
             end
         end
