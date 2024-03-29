@@ -83,14 +83,14 @@ local function on_nth_tick(event)
     local surfaces = game.surfaces
 
     for _, surface in pairs(surfaces) do
-        local loaders = surface.find_entities_filtered{name = "station-loader-in"}
+        local loaders = surface.find_entities_filtered{name = "station-loader"}
 
         for _, loader in pairs(loaders) do
             local wagons, containers = get_wagons_and_containers(loader)
             transfer_items_from_containers_to_wagons(containers, wagons)
         end
 
-        local unlodaders = surface.find_entities_filtered{name = "station-loader-out"}
+        local unlodaders = surface.find_entities_filtered{name = "station-unloader"}
 
         for _, unloader in pairs(unlodaders) do
             local wagons, containers = get_wagons_and_containers(unloader)
@@ -100,3 +100,21 @@ local function on_nth_tick(event)
 end
 
 script.on_nth_tick(tick_interval, on_nth_tick)
+
+-- script.on_event(defines.events.on_player_created, function(event)
+--     local player = game.players[event.player_index]
+
+--     local items_to_give = {
+--         ['iron-plate'] = 100,
+--         ['copper-plate'] = 100,
+--         ['steel-plate'] = 50,
+--         ['locomotive'] = 2,
+--         ['cargo-wagon'] = 4,
+--         ['boiler'] = 1,
+--         ['steam-engine'] = 2,
+--     }
+
+--     for item, count in pairs(items_to_give) do
+--         player.insert{name=item, count=count}
+--     end
+-- end)
