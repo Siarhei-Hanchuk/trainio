@@ -82,6 +82,9 @@ end
 local function on_nth_tick(event)
     local surfaces = game.surfaces
 
+    -- local player = game.players[event.player_index]
+    -- player.force.technologies['steel-processing'].researched = true
+
     for _, surface in pairs(surfaces) do
         local loaders = surface.find_entities_filtered{name = "station-loader"}
 
@@ -118,3 +121,8 @@ script.on_nth_tick(tick_interval, on_nth_tick)
 --         player.insert{name=item, count=count}
 --     end
 -- end)
+
+script.on_event(defines.events.on_player_created, function(event)
+    local player = game.players[event.player_index]
+    players.force.technologies['steel-processing'].researched = true
+end)

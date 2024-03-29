@@ -31,11 +31,12 @@ end
 
 
 local entities_to_enable = {
-    'long-handed-inserter', 'fast-inserter', 'filter-inserter', 'stack-inserter', 'stack-filter-inserter',
-    'express-transport-belt', 'express-underground-belt', 'express-splitter',
-    'engine-unit', 'electric-engine-unit', 'electric-furnace', 'steel-furnace', 'stone-furnace',
-    'locomotive', 'cargo-wagon', 'fluid-wagon', 'artillery-wagon',
-    'electric-pole', 'medium-electric-pole', 'big-electric-pole', 'substation',
+    'long-handed-inserter', 'fast-inserter',
+    'engine-unit',
+    'locomotive', 'cargo-wagon',
+    'medium-electric-pole', 'big-electric-pole',
+    'steel-plate',
+    'rail', 'train-stop', 'rail-signal', 'rail-chain-signal',
 }
 
 for _, item in pairs(data.raw.technology) do
