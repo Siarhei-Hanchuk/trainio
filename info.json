@@ -4,6 +4,10 @@
     "title": "Trainio",
     "author": "me",
     "factorio_version": "1.1",
-    "dependencies": ["base >= 1.1", "? miniloader"],
+    "dependencies": [
+      "base >= 1.1",
+      "? miniloader",
+      "? k-train-depot"
+    ],
     "description": ""
   }

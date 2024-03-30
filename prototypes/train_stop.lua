@@ -1,6 +1,6 @@
 local function create_train_station(type)
     local entity = table.deepcopy(data.raw["train-stop"]["train-stop"])
-    entity.maximum_wire_distance = 50
+    entity.circuit_wire_max_distance = 50
     entity.name = entity.name .. "-" .. type
 
     local item = table.deepcopy(data.raw["item"]["train-stop"])

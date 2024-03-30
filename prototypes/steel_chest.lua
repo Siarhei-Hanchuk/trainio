@@ -15,6 +15,10 @@ steelChest.picture = {
     scale = 0.5,
 }
 
+local steelChestItem = table.deepcopy(data.raw["item"]["steel-chest"])
+steelChestItem.name = steelChestItem.name .. "-wide"
+steelChestItem.place_result = steelChestItem.place_result .. "-wide"
+
 data:extend{
-    steelChest,
+    steelChest, steelChestItem,
 }

@@ -81,12 +81,12 @@ local function transfer_items_from_wagons_to_containers(containers, wagons)
     end
 end
 
-local function get_wagons_and_containers(load_station)
+local function get_wagons_and_containers(loader)
     local train_stops = {}
     local containers = {}
     local wagons = {}
 
-    local connected_entities = load_station.neighbours["green"]
+    local connected_entities = loader.circuit_connected_entities["green"]
 
     for _, connected_entity in pairs(connected_entities) do
         if connected_entity.type == "train-stop" then
@@ -96,12 +96,10 @@ local function get_wagons_and_containers(load_station)
         end
     end
 
-    for _, train_stop in pairs(train_stops) do
-        local train = train_stop.get_stopped_train()
-        if train then
-            for _, wagon in pairs(train.cargo_wagons) do
-                table.insert(wagons, wagon)
-            end
+    local train = loader.get_stopped_train()
+    if train then
+        for _, wagon in pairs(train.cargo_wagons) do
+            table.insert(wagons, wagon)
         end
     end
 
@@ -112,14 +110,14 @@ local function on_nth_tick(event)
     local surfaces = game.surfaces
 
     for _, surface in pairs(surfaces) do
-        local loaders = surface.find_entities_filtered{name = "station-loader"}
+        local loaders = surface.find_entities_filtered{name = "train-stop-loader"}
 
         for _, loader in pairs(loaders) do
             local wagons, containers = get_wagons_and_containers(loader)
             transfer_items_from_containers_to_wagons(containers, wagons)
         end
 
-        local unlodaders = surface.find_entities_filtered{name = "station-unloader"}
+        local unlodaders = surface.find_entities_filtered{name = "train-stop-unloader"}
 
         for _, unloader in pairs(unlodaders) do
             local wagons, containers = get_wagons_and_containers(unloader)
