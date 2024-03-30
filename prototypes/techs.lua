@@ -1,6 +1,6 @@
 techs = {
     'automation', 'logistics', 'steel-processing', 'automation', 'railway', 'automated-rail-transportation',
-    'optics', 'electric-energy-distribution-1', 'miniloader', 'engine', 'rail-signals',
+    'optics', 'electric-energy-distribution-1', 'engine', 'rail-signals',
     -- 'ultra-fast-configurable-inserter'
 }
 

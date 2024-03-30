@@ -6,8 +6,8 @@
     "factorio_version": "1.1",
     "dependencies": [
       "base >= 1.1",
-      "? miniloader",
-      "? k-train-depot"
+      "? k-train-depot",
+      "trainio-mass-production"
     ],
     "description": ""
   }
