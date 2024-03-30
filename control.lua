@@ -1,21 +1,31 @@
 local tick_interval = 60
 
 local function transfer_items_from_containers_to_wagons(containers, wagons)
+    local device_count = #wagons
     for _, container in pairs(containers) do
         local items = container.get_inventory(defines.inventory.chest).get_contents()
 
         for item, count in pairs(items) do
+            if count == 0 then
+                break
+            end
+
             local total_inserted = 0
+            local count_per_device = math.floor(count / device_count)
+            local remainder = count % device_count
 
-            for _, wagon in pairs(wagons) do
-                if wagon.type == "cargo-wagon" then
-                    local inserted = wagon.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = count - total_inserted})
+            for i, wagon in pairs(wagons) do
+                local to_insert = count_per_device + ((i == 1) and remainder or 0)
 
-                    total_inserted = total_inserted + inserted
+                if to_insert == 0 then
+                    break
+                end
 
-                    if total_inserted == count then
-                        break
-                    end
+                local inserted = wagon.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = to_insert})
+                total_inserted = total_inserted + inserted
+
+                if total_inserted == count then
+                    break
                 end
             end
 
@@ -27,23 +37,26 @@ local function transfer_items_from_containers_to_wagons(containers, wagons)
 end
 
 local function transfer_items_from_wagons_to_containers(containers, wagons)
-    device_count = #containers
+    local device_count = #containers
     for _, wagon in pairs(wagons) do
         local items = wagon.get_inventory(defines.inventory.cargo_wagon).get_contents()
 
         for item, count in pairs(items) do
+            if count == 0 then
+                break
+            end
+
             local total_inserted = 0
             local count_per_device = math.floor(count / device_count)
             local remainder = count % device_count
 
             for i, container in ipairs(containers) do
-                if i > device_count then
+                local to_insert = count_per_device + ((i == 1) and remainder or 0)
+
+                if to_insert == 0 then
                     break
                 end
-
-                local to_insert = count_per_device + ((i == 1) and remainder or 0)
                 local inserted = container.get_inventory(defines.inventory.chest).insert({name = item, count = to_insert})
-
                 total_inserted = total_inserted + inserted
 
                 if total_inserted == count then
@@ -88,9 +101,6 @@ end
 local function on_nth_tick(event)
     local surfaces = game.surfaces
 
-    -- local player = game.players[event.player_index]
-    -- player.force.technologies['steel-processing'].researched = true
-
     for _, surface in pairs(surfaces) do
         local loaders = surface.find_entities_filtered{name = "station-loader"}
 
@@ -109,26 +119,3 @@ local function on_nth_tick(event)
 end
 
 script.on_nth_tick(tick_interval, on_nth_tick)
-
--- script.on_event(defines.events.on_player_created, function(event)
---     local player = game.players[event.player_index]
-
---     local items_to_give = {
---         ['iron-plate'] = 100,
---         ['copper-plate'] = 100,
---         ['steel-plate'] = 50,
---         ['locomotive'] = 2,
---         ['cargo-wagon'] = 4,
---         ['boiler'] = 1,
---         ['steam-engine'] = 2,
---     }
-
---     for item, count in pairs(items_to_give) do
---         player.insert{name=item, count=count}
---     end
--- end)
-
-script.on_event(defines.events.on_player_created, function(event)
-    local player = game.players[event.player_index]
-    players.force.technologies['steel-processing'].researched = true
-end)
