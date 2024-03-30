@@ -141,3 +141,26 @@ script.on_event(defines.events.on_player_created, function(event)
         player.force.technologies[tech].researched = true
     end
 end)
+
+
+local function init_inventory(event)
+    local player = game.get_player(event.player_index)
+
+    if player.character and player.get_main_inventory() then
+        player.get_main_inventory().clear()
+    end
+
+    player.insert{name="burner-mining-drill-big", count=1}
+    player.insert{name="stone-furnace-big", count=1}
+    player.insert{name="wood", count=1}
+end
+
+script.on_event(defines.events.on_player_created, function(event)
+    init_inventory(event)
+end)
+
+script.on_event(defines.events.on_cutscene_cancelled, function(event)
+    if remote.interfaces["freeplay"] then
+        init_inventory(event)
+    end
+end)
