@@ -12,7 +12,7 @@ update_energy_usage(burnerMiner, BURNER_MINER_PERFORMANCE)
 burnerMiner.radius_visualisation_picture = table.deepcopy(electricMiner.radius_visualisation_picture)
 
 electricMiner.mining_speed = electricMiner.mining_speed * BURNER_MINER_PERFORMANCE * 2
-electricMiner.resource_searching_radius = electricMiner.resource_searching_radius * 2
+electricMiner.resource_searching_radius = electricMiner.resource_searching_radius * 5
 update_energy_usage(electricMiner, BURNER_MINER_PERFORMANCE * 2)
 
 
