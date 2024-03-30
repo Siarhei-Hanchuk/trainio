@@ -128,8 +128,7 @@ end
 
 script.on_nth_tick(tick_interval, on_nth_tick)
 
-
-script.on_event(defines.events.on_player_created, function(event)
+local function unlock_techs(event)
     local player = game.get_player(event.player_index)
 
     local techs = {
@@ -140,8 +139,7 @@ script.on_event(defines.events.on_player_created, function(event)
     for _, tech in ipairs(techs) do
         player.force.technologies[tech].researched = true
     end
-end)
-
+end
 
 local function init_inventory(event)
     local player = game.get_player(event.player_index)
@@ -157,6 +155,7 @@ end
 
 script.on_event(defines.events.on_player_created, function(event)
     init_inventory(event)
+    unlock_techs(event)
 end)
 
 script.on_event(defines.events.on_cutscene_cancelled, function(event)
