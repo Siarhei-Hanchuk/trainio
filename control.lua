@@ -127,3 +127,17 @@ local function on_nth_tick(event)
 end
 
 script.on_nth_tick(tick_interval, on_nth_tick)
+
+
+script.on_event(defines.events.on_player_created, function(event)
+    local player = game.get_player(event.player_index)
+
+    local techs = {
+        'steel-processing', 'automation', 'railway', 'automated-rail-transportation',
+        'electric-energy-distribution-1', 'engine', 'rail-signals',
+    }
+
+    for _, tech in ipairs(techs) do
+        player.force.technologies[tech].researched = true
+    end
+end)
