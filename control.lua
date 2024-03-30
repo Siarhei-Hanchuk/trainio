@@ -2,6 +2,11 @@ local tick_interval = 60
 
 local function transfer_items_from_containers_to_wagons(containers, wagons)
     local device_count = #wagons
+
+    if device_count == 0 then
+        return
+    end
+
     for _, container in pairs(containers) do
         local items = container.get_inventory(defines.inventory.chest).get_contents()
 
@@ -15,7 +20,7 @@ local function transfer_items_from_containers_to_wagons(containers, wagons)
             local remainder = count % device_count
 
             for i, wagon in pairs(wagons) do
-                local to_insert = count_per_device + ((i == 1) and remainder or 0)
+                local to_insert = count_per_device + remainder
 
                 if to_insert == 0 then
                     break
@@ -38,6 +43,11 @@ end
 
 local function transfer_items_from_wagons_to_containers(containers, wagons)
     local device_count = #containers
+
+    if device_count == 0 then
+        return
+    end
+
     for _, wagon in pairs(wagons) do
         local items = wagon.get_inventory(defines.inventory.cargo_wagon).get_contents()
 
@@ -51,7 +61,7 @@ local function transfer_items_from_wagons_to_containers(containers, wagons)
             local remainder = count % device_count
 
             for i, container in ipairs(containers) do
-                local to_insert = count_per_device + ((i == 1) and remainder or 0)
+                local to_insert = count_per_device + remainder
 
                 if to_insert == 0 then
                     break
