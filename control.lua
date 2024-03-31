@@ -148,18 +148,18 @@ local function init_inventory(event)
         player.get_main_inventory().clear()
     end
 
-    player.insert{name="burner-mining-drill-big", count=1}
-    player.insert{name="stone-furnace-big", count=1}
+    player.insert{name="burner-mining-drill", count=1}
+    player.insert{name="stone-furnace", count=1}
     player.insert{name="wood", count=1}
 end
 
 script.on_event(defines.events.on_player_created, function(event)
-    init_inventory(event)
+    -- init_inventory(event)
     unlock_techs(event)
 end)
 
 script.on_event(defines.events.on_cutscene_cancelled, function(event)
     if remote.interfaces["freeplay"] then
-        init_inventory(event)
+        -- init_inventory(event)
     end
 end)
