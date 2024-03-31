@@ -1,11 +1,24 @@
 local steelChest = table.deepcopy(data.raw["container"]["steel-chest"])
 
+local function adjust_box(box, adjustment)
+    for i, coord in ipairs(box) do
+        for j, value in ipairs(coord) do
+            if value < 0 then
+                box[i][j] = value + adjustment
+            else
+                box[i][j] = value - adjustment
+            end
+        end
+    end
+    return box
+end
+
 local function create_wide_steel_chest(box, width, height, postfix)
     local steelChest = table.deepcopy(data.raw["container"]["steel-chest"])
     steelChest.name = steelChest.name .. "-wide-" .. postfix
     steelChest.circuit_wire_max_distance = 50
     steelChest.inventory_size = steelChest.inventory_size * 6
-    steelChest.collision_box = box
+    steelChest.collision_box = adjust_box(box, 0.1)
     steelChest.selection_box = box
 
     steelChest.picture = {
