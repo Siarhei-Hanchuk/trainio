@@ -133,7 +133,7 @@ local function unlock_techs(event)
 
     local techs = {
         'steel-processing', 'automation', 'railway', 'automated-rail-transportation',
-        'electric-energy-distribution-1', 'engine', 'rail-signals',
+        'electric-energy-distribution-1', 'engine', 'rail-signals', 'circuit-network'
     }
 
     for _, tech in ipairs(techs) do
