@@ -7,13 +7,22 @@ local function create_train_station(type)
     item.name = item.name .. "-" .. type
     item.place_result = item.place_result .. "-" .. type
 
-    return entity, item
+    local recipe = table.deepcopy(data.raw["recipe"]["train-stop"])
+    recipe.name = recipe.name .. "-" .. type
+    recipe.result = "train-stop-" .. type
+
+    table.insert(
+        data.raw["technology"]["automated-rail-transportation"].effects,
+        {type = "unlock-recipe", recipe = recipe.name}
+    )
+
+    return entity, item, recipe
 end
 
-entityIn, itemIn = create_train_station("loader")
-entityOut, itemOut = create_train_station("unloader")
+entityIn, itemIn, recipeIn = create_train_station("loader")
+entityOut, itemOut, recipeOut = create_train_station("unloader")
 
 data:extend{
-    entityIn, itemIn,
-    entityOut, itemOut,
+    entityIn, itemIn, recipeIn,
+    entityOut, itemOut, recipeOut,
 }

@@ -15,10 +15,19 @@ steelChest.picture = {
     scale = 0.5,
 }
 
+local steelChestRecipe = table.deepcopy(data.raw["recipe"]["steel-chest"])
+steelChestRecipe.name = steelChestRecipe.name .. "-wide"
+steelChestRecipe.result = steelChestRecipe.result .. "-wide"
+
 local steelChestItem = table.deepcopy(data.raw["item"]["steel-chest"])
 steelChestItem.name = steelChestItem.name .. "-wide"
 steelChestItem.place_result = steelChestItem.place_result .. "-wide"
 
 data:extend{
-    steelChest, steelChestItem,
+    steelChest, steelChestItem, steelChestRecipe,
 }
+
+table.insert(
+    data.raw["technology"]["steel-processing"].effects,
+    {type = "unlock-recipe", recipe = steelChestRecipe.name}
+)
