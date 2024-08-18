@@ -16,6 +16,17 @@ local function create_train_station(type)
         {type = "unlock-recipe", recipe = recipe.name}
     )
 
+    entity.radius_visualisation_specification = {
+        sprite = {
+            filename="__base__/graphics/entity/electric-mining-drill/electric-mining-drill-radius-visualization.png",
+            width=10,
+            height=10,
+        },
+        distance = 50,
+        draw_in_cursor = true,
+        draw_on_selection = true,
+    }
+
     return entity, item, recipe
 end
 

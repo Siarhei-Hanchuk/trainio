@@ -141,18 +141,6 @@ local function unlock_techs(event)
     end
 end
 
-local function init_inventory(event)
-    local player = game.get_player(event.player_index)
-
-    if player.character and player.get_main_inventory() then
-        player.get_main_inventory().clear()
-    end
-
-    player.insert{name="burner-mining-drill", count=1}
-    player.insert{name="stone-furnace", count=1}
-    player.insert{name="wood", count=1}
-end
-
 script.on_event(defines.events.on_player_created, function(event)
     -- init_inventory(event)
     unlock_techs(event)
@@ -161,5 +149,66 @@ end)
 script.on_event(defines.events.on_cutscene_cancelled, function(event)
     if remote.interfaces["freeplay"] then
         -- init_inventory(event)
+    end
+end)
+
+
+script.on_event(defines.events.on_built_entity, function(event)
+    local entity = event.created_entity
+    local player = game.get_player(event.player_index)
+
+    if entity.name == "train-stop-loader" then
+        local surface = entity.surface
+        local position = entity.position
+
+        local chest_position = {x = position.x + 1, y = position.y}
+
+        if surface.can_place_entity{name = "steel-chest", position = chest_position} then
+            local chest = surface.create_entity{
+                name = "steel-chest",
+                position = chest_position,
+                force = entity.force,
+                create_build_effect_smoke = false
+            }
+
+            chest.destructible = false
+            chest.minable = false
+            chest.operable = false
+
+            if not global.train_stop_chests then
+                global.train_stop_chests = {}
+            end
+            global.train_stop_chests[entity.unit_number] = chest
+        else
+            player.print("error")
+        end
+    end
+end)
+
+local function remove_linked_chest(entity)
+    if global.train_stop_chests and global.train_stop_chests[entity.unit_number] then
+        local chest = global.train_stop_chests[entity.unit_number]
+        if chest and chest.valid then
+            chest.destroy()
+        end
+        global.train_stop_chests[entity.unit_number] = nil
+    end
+end
+
+script.on_event(defines.events.on_entity_died, function(event)
+    if event.entity.name == "train-stop-loader" then
+        remove_linked_chest(event.entity)
+    end
+end)
+
+script.on_event(defines.events.on_player_mined_entity, function(event)
+    if event.entity.name == "train-stop-loader" then
+        remove_linked_chest(event.entity)
+    end
+end)
+
+script.on_event(defines.events.on_robot_mined_entity, function(event)
+    if event.entity.name == "train-stop-loader" then
+        remove_linked_chest(event.entity)
     end
 end)
