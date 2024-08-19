@@ -291,3 +291,68 @@ script.on_event(defines.events.on_robot_mined_entity, function(event)
         remove_linked_chest(event.entity)
     -- end
 end)
+
+script.on_event(defines.events.on_gui_opened, function(event)
+    local player = game.players[event.player_index]
+    local entity = event.entity
+
+    if entity and entity.type == "container" and entity.name == "steel-chest" then
+        if not player.gui.left.custom_chest_gui then
+            local gui = player.gui.left.add{
+                type = "frame",
+                name = "custom_chest_gui",
+                caption = "Select Item",
+                direction = "vertical",
+                style = "frame"
+            }
+
+            gui.add{
+                type = "choose-elem-button",
+                name = "choose_item_button",
+                elem_type = "item",
+                style = "button"
+            }
+
+            local chest = player.opened
+            if chest and chest.type == "container" and global.chest_item_selection then
+                local selected_item = global.chest_item_selection[chest.unit_number]
+                if selected_item then
+                    gui.choose_item_button.elem_value = selected_item
+                end
+            end
+        end
+    end
+end)
+
+script.on_event(defines.events.on_gui_elem_changed, function(event)
+    if event.element and event.element.name == "choose_item_button" then
+        local player = game.players[event.player_index]
+        local selected_item = event.element.elem_value
+
+        if selected_item then
+            player.print("Item selected1: " .. selected_item)
+
+            local chest = player.opened
+            if chest and chest.type == "container" then
+                if not global.chest_item_selection then
+                    global.chest_item_selection = {}
+                end
+                global.chest_item_selection[chest.unit_number] = selected_item
+                player.print("Item saved for chest: " .. selected_item)
+            end
+        else
+            player.print("No item selected1.")
+        end
+    end
+end)
+
+script.on_event(defines.events.on_gui_closed, function(event)
+    local player = game.players[event.player_index]
+
+    for _, child in pairs(player.gui.left.children) do
+        if child.name == "custom_chest_gui" then
+            child.destroy()
+            break
+        end
+    end
+end)
