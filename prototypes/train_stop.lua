@@ -2,6 +2,7 @@ local function create_train_station(type)
     local entity = table.deepcopy(data.raw["train-stop"]["train-stop"])
     entity.circuit_wire_max_distance = 50
     entity.name = entity.name .. "-" .. type
+    entity.minable.result = entity.name
 
     local item = table.deepcopy(data.raw["item"]["train-stop"])
     item.name = item.name .. "-" .. type
@@ -22,7 +23,7 @@ local function create_train_station(type)
             width=10,
             height=10,
         },
-        distance = 50,
+        distance = 10,
         draw_in_cursor = true,
         draw_on_selection = true,
     }
