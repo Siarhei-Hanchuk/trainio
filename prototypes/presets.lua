@@ -18,10 +18,6 @@ cliff_settings = {
 }
 pollution = {
     enabled = false,
-    diffusion_ratio = 0,
-    min_to_diffuse = 0,
-    ageing = 0,
-    enemy_attack_pollution_consumption_modifier = 0
 }
 
 preset["default"] = false
