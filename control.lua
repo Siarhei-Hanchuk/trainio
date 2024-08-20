@@ -279,13 +279,16 @@ local function remove_linked_chest(entity)
         local chest = global.linked_chests[entity.unit_number]
         if chest and chest.valid then
             if chest.get_inventory(defines.inventory.chest).is_empty() then
+                global.source_chests[chest.unit_number] = nil
                 chest.destroy()
             else
                 chest.minable = true
             end
         end
         global.linked_chests[entity.unit_number] = nil
-        global.source_chests[chest.unit_number] = nil
+        if chest.valid then
+            global.source_chests[chest.unit_number] = nil
+        end
     end
 end
 
