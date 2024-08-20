@@ -1,55 +1,34 @@
-local tick_interval = 60
+local tick_interval = 1
 
-local function transfer_items_from_containers_to_wagons(containers, wagons)
-    local device_count = #wagons
-
-    if device_count == 0 then
-        return
-    end
-
-    for _, container in pairs(containers) do
-        local items = container.get_inventory(defines.inventory.chest).get_contents()
-
-        for item, count in pairs(items) do
-            if count == 0 then
-                break
-            end
-
-            local total_inserted = 0
-            local count_per_device = math.floor(count / device_count)
-            local remainder = count % device_count
-
-            for i, wagon in pairs(wagons) do
-                local to_insert = count_per_device + remainder
-
-                if to_insert == 0 then
-                    break
-                end
-
-                local inserted = wagon.get_inventory(defines.inventory.cargo_wagon).insert({name = item, count = to_insert})
-                total_inserted = total_inserted + inserted
-
-                if total_inserted == count then
-                    break
-                end
-            end
-
-            if total_inserted > 0 then
-                container.get_inventory(defines.inventory.chest).remove({name = item, count = total_inserted})
-            end
+local function get_inventory(factory, type)
+    if factory.name == "assembling-machine-1" or factory.name == "assembling-machine-2" then
+        if type == "unloading" then
+            return factory.get_inventory(defines.inventory.assembling_machine_input)
+        elseif type == "loading" then
+            return factory.get_inventory(defines.inventory.assembling_machine_output)
+        else
+            error("not supported")
         end
+    elseif factory.name == "boiler" then
+        return factory.get_inventory(defines.inventory.fuel)
+    elseif factory.name == "steel-chest" then
+        return factory.get_inventory(defines.inventory.chest)
+    elseif factory.name == "cargo-wagon" then
+        return factory.get_inventory(defines.inventory.cargo_wagon)
+    else
+        error("not supported")
     end
 end
 
-local function transfer_items_from_wagons_to_containers(containers, wagons)
-    local device_count = #containers
+local function transfer_items_from_to(sources, destinations, type)
+    local device_count = #destinations
 
     if device_count == 0 then
         return
     end
 
-    for _, wagon in pairs(wagons) do
-        local items = wagon.get_inventory(defines.inventory.cargo_wagon).get_contents()
+    for _, source in pairs(sources) do
+        local items = get_inventory(source, type).get_contents()
 
         for item, count in pairs(items) do
             if count == 0 then
@@ -60,13 +39,14 @@ local function transfer_items_from_wagons_to_containers(containers, wagons)
             local count_per_device = math.floor(count / device_count)
             local remainder = count % device_count
 
-            for i, container in ipairs(containers) do
+            for _, destination in ipairs(destinations) do
                 local to_insert = count_per_device + remainder
 
                 if to_insert == 0 then
                     break
                 end
-                local inserted = container.get_inventory(defines.inventory.chest).insert({name = item, count = to_insert})
+
+                local inserted = get_inventory(destination, type).insert({name = item, count = to_insert})
                 total_inserted = total_inserted + inserted
 
                 if total_inserted == count then
@@ -75,7 +55,7 @@ local function transfer_items_from_wagons_to_containers(containers, wagons)
             end
 
             if total_inserted > 0 then
-                wagon.get_inventory(defines.inventory.cargo_wagon).remove({name = item, count = total_inserted})
+                get_inventory(source, type).remove({name = item, count = total_inserted})
             end
         end
     end
@@ -84,7 +64,7 @@ end
 local function find_factories_around_train_stop(train_stop)
     local surface = train_stop.surface
     local position = train_stop.position
-    local radius = 100
+    local radius = 10
 
     local left_top = {x = position.x - radius, y = position.y - radius}
     local right_bottom = {x = position.x + radius, y = position.y + radius}
@@ -110,17 +90,17 @@ local function find_factories_around_train_stop(train_stop)
     return factories
 end
 
-local function get_wagons_and_containers(loader)
+local function get_wagons_and_containers(station)
     local containers = {}
     local wagons = {}
 
-    local chest = global.linked_chests[loader.unit_number]
+    local chest = global.linked_chests[station.unit_number]
 
     if chest then
         table.insert(containers, chest)
     end
 
-    local train = loader.get_stopped_train()
+    local train = station.get_stopped_train()
     if train then
         for _, wagon in pairs(train.cargo_wagons) do
             table.insert(wagons, wagon)
@@ -128,43 +108,6 @@ local function get_wagons_and_containers(loader)
     end
 
     return wagons, containers
-end
-
-local function get_inventory(factory)
-    if factory.name == "assembling-machine-1" or factory.name == "assembling-machine-2" then
-        return factory.get_inventory(defines.inventory.assembling_machine_input)
-    elseif factory.name == "boiler" then
-        return factory.get_inventory(defines.inventory.fuel)
-    elseif factory.name == "steel-chest" then
-        return factory.get_inventory(defines.inventory.chest)
-    else
-        error("not supported")
-    end
-
-    return factory_inventory
-end
-
-local function dispatch_items_from_to(containers, factories)
-    for _, factory in pairs(factories) do
-        factory_inventory = get_inventory(factory)
-
-        for _, container in pairs(containers) do
-            local container_inventory = get_inventory(container)
-
-            -- container_inventory.sort_and_merge()
-            -- factory_inventory.sort_and_merge()
-
-            for i = 1, #container_inventory do
-                local stack = container_inventory[i]
-                if stack and stack.valid_for_read then
-                    local inserted_count = factory_inventory.insert(stack)
-                    if inserted_count > 0 then
-                        stack.count = stack.count - inserted_count
-                    end
-                end
-            end
-        end
-    end
 end
 
 local function on_nth_tick(event)
@@ -175,20 +118,20 @@ local function on_nth_tick(event)
 
         for _, loader in pairs(loaders) do
             local wagons, containers = get_wagons_and_containers(loader)
-            transfer_items_from_containers_to_wagons(containers, wagons)
+            transfer_items_from_to(containers, wagons)
 
             factories = find_factories_around_train_stop(loader)
-            dispatch_items_from_to(factories, containers)
+            transfer_items_from_to(factories, containers, "loading")
         end
 
         local unlodaders = surface.find_entities_filtered{name = "train-stop-unloader"}
 
         for _, unloader in pairs(unlodaders) do
             local wagons, containers = get_wagons_and_containers(unloader)
-            transfer_items_from_wagons_to_containers(containers, wagons)
+            transfer_items_from_to(wagons, containers)
 
             factories = find_factories_around_train_stop(unloader)
-            dispatch_items_from_to(containers, factories)
+            transfer_items_from_to(containers, factories, "unloading")
         end
     end
 end
