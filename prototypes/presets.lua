@@ -1,4 +1,5 @@
 local railWorld = table.deepcopy(data.raw["map-gen-presets"]["default"]["rail-world"])
+local preset = table.deepcopy(data.raw["map-gen-presets"]["default"]["default"])
 
 for name, params in pairs(railWorld["basic_settings"]["autoplace_controls"]) do
     if name == "enemy-base" then
@@ -10,4 +11,24 @@ for name, params in pairs(railWorld["basic_settings"]["autoplace_controls"]) do
     end
 end
 
-data.raw["map-gen-presets"].default["trainio"] = railWorld
+cliff_settings = {
+    name = "cliff",
+    cliff_elevation_interval = 0,
+    cliff_elevation_0 = 0
+}
+pollution = {
+    enabled = false,
+    diffusion_ratio = 0,
+    min_to_diffuse = 0,
+    ageing = 0,
+    enemy_attack_pollution_consumption_modifier = 0
+}
+
+preset["default"] = false
+preset["basic_settings"] = {}
+preset["advanced_settings"] = {}
+preset["basic_settings"]["cliff_settings"] = cliff_settings
+preset["advanced_settings"]["pollution"] = pollution
+preset["basic_settings"]["autoplace_controls"] = railWorld["basic_settings"]["autoplace_controls"]
+
+data.raw["map-gen-presets"].default["trainio"] = preset
