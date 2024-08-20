@@ -81,19 +81,43 @@ local function transfer_items_from_wagons_to_containers(containers, wagons)
     end
 end
 
+local function find_factories_around_train_stop(train_stop)
+    local surface = train_stop.surface
+    local position = train_stop.position
+    local radius = 100
+
+    local left_top = {x = position.x - radius, y = position.y - radius}
+    local right_bottom = {x = position.x + radius, y = position.y + radius}
+
+    local factories = surface.find_entities_filtered{
+        area = {left_top, right_bottom},
+        name = {"assembling-machine-1", "assembling-machine-2", "boiler"}
+    }
+
+    local all_chests = surface.find_entities_filtered{
+        area = {left_top, right_bottom},
+        name = {"steel-chest"}
+    }
+
+    mining_chests = {}
+
+    for _, chest in pairs(all_chests) do
+        if global.source_chests[chest.unit_number] then
+            table.insert(factories, chest)
+        end
+    end
+
+    return factories
+end
+
 local function get_wagons_and_containers(loader)
-    local train_stops = {}
     local containers = {}
     local wagons = {}
 
-    local connected_entities = loader.circuit_connected_entities["green"]
+    local chest = global.linked_chests[loader.unit_number]
 
-    for _, connected_entity in pairs(connected_entities) do
-        if connected_entity.type == "train-stop" then
-            table.insert(train_stops, connected_entity)
-        elseif connected_entity.type == "container" then
-            table.insert(containers, connected_entity)
-        end
+    if chest then
+        table.insert(containers, chest)
     end
 
     local train = loader.get_stopped_train()
@@ -106,6 +130,43 @@ local function get_wagons_and_containers(loader)
     return wagons, containers
 end
 
+local function get_inventory(factory)
+    if factory.name == "assembling-machine-1" or factory.name == "assembling-machine-2" then
+        return factory.get_inventory(defines.inventory.assembling_machine_input)
+    elseif factory.name == "boiler" then
+        return factory.get_inventory(defines.inventory.fuel)
+    elseif factory.name == "steel-chest" then
+        return factory.get_inventory(defines.inventory.chest)
+    else
+        error("not supported")
+    end
+
+    return factory_inventory
+end
+
+local function dispatch_items_from_to(containers, factories)
+    for _, factory in pairs(factories) do
+        factory_inventory = get_inventory(factory)
+
+        for _, container in pairs(containers) do
+            local container_inventory = get_inventory(container)
+
+            -- container_inventory.sort_and_merge()
+            -- factory_inventory.sort_and_merge()
+
+            for i = 1, #container_inventory do
+                local stack = container_inventory[i]
+                if stack and stack.valid_for_read then
+                    local inserted_count = factory_inventory.insert(stack)
+                    if inserted_count > 0 then
+                        stack.count = stack.count - inserted_count
+                    end
+                end
+            end
+        end
+    end
+end
+
 local function on_nth_tick(event)
     local surfaces = game.surfaces
 
@@ -115,6 +176,9 @@ local function on_nth_tick(event)
         for _, loader in pairs(loaders) do
             local wagons, containers = get_wagons_and_containers(loader)
             transfer_items_from_containers_to_wagons(containers, wagons)
+
+            factories = find_factories_around_train_stop(loader)
+            dispatch_items_from_to(factories, containers)
         end
 
         local unlodaders = surface.find_entities_filtered{name = "train-stop-unloader"}
@@ -122,6 +186,9 @@ local function on_nth_tick(event)
         for _, unloader in pairs(unlodaders) do
             local wagons, containers = get_wagons_and_containers(unloader)
             transfer_items_from_wagons_to_containers(containers, wagons)
+
+            factories = find_factories_around_train_stop(unloader)
+            dispatch_items_from_to(containers, factories)
         end
     end
 end
@@ -241,6 +308,10 @@ function add_chest_to_drill(entity)
             global.linked_chests = {}
         end
         global.linked_chests[entity.unit_number] = chest
+        if not global.source_chests then
+            global.source_chests = {}
+        end
+        global.source_chests[chest.unit_number] = chest
     else
         print("error")
     end
@@ -271,6 +342,7 @@ local function remove_linked_chest(entity)
             end
         end
         global.linked_chests[entity.unit_number] = nil
+        global.source_chests[chest.unit_number] = nil
     end
 end
 
