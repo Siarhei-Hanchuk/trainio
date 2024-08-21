@@ -1,3 +1,5 @@
+local TRAIN_STOP_RADIUS = 15
+
 local function create_train_station(type)
     local entity = table.deepcopy(data.raw["train-stop"]["train-stop"])
     entity.circuit_wire_max_distance = 50
@@ -20,10 +22,10 @@ local function create_train_station(type)
     entity.radius_visualisation_specification = {
         sprite = {
             filename="__base__/graphics/entity/electric-mining-drill/electric-mining-drill-radius-visualization.png",
-            width=10,
-            height=10,
+            width=12,
+            height=12,
         },
-        distance = 10,
+        distance = TRAIN_STOP_RADIUS,
         draw_in_cursor = true,
         draw_on_selection = true,
     }

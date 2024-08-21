@@ -1,61 +1,61 @@
-local tick_interval = 1
+local tick_interval = 60
+local TRAIN_STOP_RADIUS = 15
 
-local function get_inventory(factory, type)
+local function get_inventories(factory, type)
     if factory.name == "assembling-machine-1" or factory.name == "assembling-machine-2" then
         if type == "unloading" then
-            return factory.get_inventory(defines.inventory.assembling_machine_input)
+            return {factory.get_inventory(defines.inventory.assembling_machine_input)}
         elseif type == "loading" then
-            return factory.get_inventory(defines.inventory.assembling_machine_output)
+            return {factory.get_inventory(defines.inventory.assembling_machine_output)}
         else
             error("not supported")
         end
     elseif factory.name == "boiler" then
-        return factory.get_inventory(defines.inventory.fuel)
+        return {factory.get_inventory(defines.inventory.fuel)}
     elseif factory.name == "steel-chest" then
-        return factory.get_inventory(defines.inventory.chest)
+        return {factory.get_inventory(defines.inventory.chest)}
     elseif factory.name == "cargo-wagon" then
-        return factory.get_inventory(defines.inventory.cargo_wagon)
+        return {factory.get_inventory(defines.inventory.cargo_wagon)}
+    elseif factory.name == "stone-furnace" or factory.name == "steel-furnace" or factory.name == "electric-furnace" then
+        if type == "unloading" then
+            return {factory.get_inventory(defines.inventory.furnace_source), factory.get_inventory(defines.inventory.fuel)}
+        elseif type == "loading" then
+            return {factory.get_inventory(defines.inventory.furnace_result)}
+        else
+            error("not supported")
+        end
     else
         error("not supported")
     end
 end
 
 local function transfer_items_from_to(sources, destinations, type)
-    local device_count = #destinations
-
-    if device_count == 0 then
+    if #destinations == 0 then
         return
     end
 
     for _, source in pairs(sources) do
-        local items = get_inventory(source, type).get_contents()
+        local source_inventories = get_inventories(source, type)
 
-        for item, count in pairs(items) do
-            if count == 0 then
-                break
-            end
+        for _, source_inventory in ipairs(source_inventories) do
+            local items = source_inventory.get_contents()
 
-            local total_inserted = 0
-            local count_per_device = math.floor(count / device_count)
-            local remainder = count % device_count
+            for item, count in pairs(items) do
+                for _, destination in ipairs(destinations) do
+                    local destination_inventories = get_inventories(destination, type)
 
-            for _, destination in ipairs(destinations) do
-                local to_insert = count_per_device + remainder
+                    for _, destination_inventory in ipairs(destination_inventories) do
+                        if count == 0 then
+                            break
+                        end
 
-                if to_insert == 0 then
-                    break
+                        local inserted = destination_inventory.insert({name = item, count = count})
+                        if inserted > 0 then
+                            source_inventory.remove({name = item, count = inserted})
+                            count = count - inserted
+                        end
+                    end
                 end
-
-                local inserted = get_inventory(destination, type).insert({name = item, count = to_insert})
-                total_inserted = total_inserted + inserted
-
-                if total_inserted == count then
-                    break
-                end
-            end
-
-            if total_inserted > 0 then
-                get_inventory(source, type).remove({name = item, count = total_inserted})
             end
         end
     end
@@ -64,14 +64,18 @@ end
 local function find_factories_around_train_stop(train_stop)
     local surface = train_stop.surface
     local position = train_stop.position
-    local radius = 10
+    local radius = TRAIN_STOP_RADIUS
 
     local left_top = {x = position.x - radius, y = position.y - radius}
     local right_bottom = {x = position.x + radius, y = position.y + radius}
 
     local factories = surface.find_entities_filtered{
         area = {left_top, right_bottom},
-        name = {"assembling-machine-1", "assembling-machine-2", "boiler"}
+        name = {
+            "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",
+            "boiler",
+            "stone-furnace", "steel-furnace", "electric-furnace",
+        }
     }
 
     local all_chests = surface.find_entities_filtered{
