@@ -179,14 +179,14 @@ function add_chest_to_station(entity)
     elseif entity.direction == 4 then --NS
         chest_position = {x = position.x + 0, y = position.y + 1}
     elseif entity.direction == 6 then --EW
-        chest_position = {x = position.x - 2, y = position.y}
+        chest_position = {x = position.x - 1, y = position.y}
     else
         print("error")
     end
 
-    if surface.can_place_entity{name = "steel-chest", position = chest_position} then
+    if surface.can_place_entity{name = "storage-chest", position = chest_position} then
         local chest = surface.create_entity{
-            name = "steel-chest",
+            name = "storage-chest",
             position = chest_position,
             force = entity.force,
             create_build_effect_smoke = false

@@ -6,6 +6,7 @@
     "factorio_version": "1.1",
     "dependencies": [
       "base >= 1.1",
+      "flib >= 0.14.2",
       "? k-train-depot",
       "trainio-mass-production"
     ],
