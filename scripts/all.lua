@@ -118,7 +118,7 @@ local function on_nth_tick(event)
     local surfaces = game.surfaces
 
     for _, surface in pairs(surfaces) do
-        local loaders = surface.find_entities_filtered{name = "train-stop-loader"}
+        local loaders = surface.find_entities_filtered{name = "train-stop-to-train"}
 
         for _, loader in pairs(loaders) do
             local wagons, containers = get_wagons_and_containers(loader)
@@ -128,7 +128,7 @@ local function on_nth_tick(event)
             transfer_items_from_to(factories, containers, "loading")
         end
 
-        local unlodaders = surface.find_entities_filtered{name = "train-stop-unloader"}
+        local unlodaders = surface.find_entities_filtered{name = "train-stop-from-train"}
 
         for _, unloader in pairs(unlodaders) do
             local wagons, containers = get_wagons_and_containers(unloader)
@@ -268,7 +268,7 @@ end
 script.on_event(defines.events.on_built_entity, function(event)
     local entity = event.created_entity
 
-    if entity.name == "train-stop-loader" or entity.name == "train-stop-unloader" then
+    if entity.name == "train-stop-to-train" or entity.name == "train-stop-from-train" then
         add_chest_to_station(entity)
     end
 
@@ -297,19 +297,19 @@ local function remove_linked_chest(entity)
 end
 
 script.on_event(defines.events.on_entity_died, function(event)
-    -- if event.entity.name == "train-stop-loader" then
+    -- if event.entity.name == "train-stop-to-train" then
         remove_linked_chest(event.entity)
     -- end
 end)
 
 script.on_event(defines.events.on_player_mined_entity, function(event)
-    -- if event.entity.name == "train-stop-loader" then
+    -- if event.entity.name == "train-stop-to-train" then
         remove_linked_chest(event.entity)
     -- end
 end)
 
 script.on_event(defines.events.on_robot_mined_entity, function(event)
-    -- if event.entity.name == "train-stop-loader" then
+    -- if event.entity.name == "train-stop-to-train" then
         remove_linked_chest(event.entity)
     -- end
 end)

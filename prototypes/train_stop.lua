@@ -33,8 +33,8 @@ local function create_train_station(type)
     return entity, item, recipe
 end
 
-entityIn, itemIn, recipeIn = create_train_station("loader")
-entityOut, itemOut, recipeOut = create_train_station("unloader")
+entityIn, itemIn, recipeIn = create_train_station("to-train")
+entityOut, itemOut, recipeOut = create_train_station("from-train")
 
 data:extend{
     entityIn, itemIn, recipeIn,
