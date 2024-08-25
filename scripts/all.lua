@@ -265,19 +265,6 @@ function add_chest_to_drill(entity)
 end
 
 
-script.on_event(defines.events.on_built_entity, function(event)
-    local entity = event.created_entity
-
-    if entity.name == "train-stop-to-train" or entity.name == "train-stop-from-train" then
-        add_chest_to_station(entity)
-    end
-
-    if entity.name == "burner-mining-drill" or entity.name == "electric-mining-drill" then
-        add_chest_to_drill(entity)
-    end
-
-end)
-
 local function remove_linked_chest(entity)
     if global.linked_chests and global.linked_chests[entity.unit_number] then
         local chest = global.linked_chests[entity.unit_number]
