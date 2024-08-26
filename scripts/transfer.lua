@@ -83,8 +83,10 @@ local function find_factories_around_train_stop(train_stop, station_type)
     end
 
     for _, factory in pairs(factories) do
-        local factory_inventory = get_inventories(factory, station_type)
-        table.insert(result_inventories, factory_inventory)
+        local factory_inventories = get_inventories(factory, station_type)
+        for _, factory_inventory in pairs(factory_inventories) do
+            table.insert(result_inventories, factory_inventory)
+        end
     end
 
     return result_inventories
