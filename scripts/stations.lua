@@ -133,10 +133,6 @@ function add_chest_to_drill(entity)
             global.linked_chests = {}
         end
         global.linked_chests[entity.unit_number] = chest
-        if not global.source_chests then
-            global.source_chests = {}
-        end
-        global.source_chests[chest.unit_number] = chest
     else
         print("error")
     end
@@ -197,9 +193,32 @@ local function remove_linked_chest(event)
     global.linked_chests[entity.unit_number] = nil
 end
 
-script.on_event(defines.events.on_entity_died, remove_linked_chest)
-script.on_event(defines.events.on_player_mined_entity, remove_linked_chest)
-script.on_event(defines.events.on_robot_mined_entity, remove_linked_chest)
+local function remove_linked_combi(event)
+    local entity = event.entity
+
+    if not (global.linked_combis and global.linked_combis[entity.unit_number]) then
+        return
+    end
+
+    local combi = global.linked_combis[entity.unit_number]
+    if not (combi and combi.valid) then
+        return
+    end
+
+    combi.destroy()
+
+    global.linked_combis[entity.unit_number] = nil
+end
+
+local function cleanup_lined_objects(event)
+    remove_linked_combi(event)
+    remove_linked_chest(event)
+end
+
+-- TODO: add check type of entity
+script.on_event(defines.events.on_entity_died, cleanup_lined_objects)
+script.on_event(defines.events.on_player_mined_entity, cleanup_lined_objects)
+script.on_event(defines.events.on_robot_mined_entity, cleanup_lined_objects)
 
 
 local function remove_empty_chests()
