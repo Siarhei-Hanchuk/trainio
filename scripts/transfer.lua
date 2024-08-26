@@ -138,7 +138,7 @@ local function transfer_items_from_station_factories(station)
     local stationStorage = global.linked_chests[station.unit_number]
 
     -- TODO: use cache
-    factories_inventories = find_factories_around_train_stop(station, "to-train")
+    factories_inventories = find_factories_around_train_stop(station, "from-train")
     transfer_items_from_to({stationStorage.get_inventory(defines.inventory.chest)}, factories_inventories)
 end
 
