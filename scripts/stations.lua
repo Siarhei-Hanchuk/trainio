@@ -152,3 +152,22 @@ end
 script.on_event(defines.events.on_entity_died, remove_linked_chest)
 script.on_event(defines.events.on_player_mined_entity, remove_linked_chest)
 script.on_event(defines.events.on_robot_mined_entity, remove_linked_chest)
+
+
+local function remove_empty_chests()
+    for _, surface in pairs(game.surfaces) do
+        local chests = surface.find_entities_filtered{name = "storage-chest"}
+        for _, chest in pairs(chests) do
+            if chest and chest.valid then
+                local chest_inventory = chest.get_inventory(defines.inventory.chest)
+
+                if chest_inventory and chest_inventory.is_empty() then
+                    chest.destroy()
+                end
+            end
+        end
+    end
+end
+
+
+script.on_nth_tick(1, remove_empty_chests)
