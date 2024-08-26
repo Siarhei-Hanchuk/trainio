@@ -138,7 +138,9 @@ local function remove_linked_chest(event)
 
         for name, count in pairs(chest_inventory.get_contents()) do
             local insert_result = player_inventory.insert({name = name, count = count})
-            chest_inventory.remove({name = name, count = insert_result})
+            if insert_result > 0 then
+                chest_inventory.remove({name = name, count = insert_result})
+            end
         end
 
         if chest_inventory.is_empty() then
