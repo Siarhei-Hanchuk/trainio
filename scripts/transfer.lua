@@ -157,7 +157,7 @@ script.on_nth_tick(60, function(event)
         local unlodaders = surface.find_entities_filtered{name = "train-stop-from-train"}
 
         for _, unloader in pairs(unlodaders) do
-            transfer_items_from_train_to_station(loader)
+            transfer_items_from_train_to_station(unloader)
             transfer_items_from_station_factories(unloader)
         end
     end
