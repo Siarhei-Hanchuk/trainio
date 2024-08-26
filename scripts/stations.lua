@@ -109,32 +109,46 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 end)
 
-local function remove_linked_chest(entity)
-    if global.linked_chests and global.linked_chests[entity.unit_number] then
-        local chest = global.linked_chests[entity.unit_number]
-        if chest and chest.valid then
-            if chest.get_inventory(defines.inventory.chest).is_empty() then
-                -- global.source_chests[chest.unit_number] = nil
-                chest.destroy()
-            else
-                chest.minable = true
-            end
-        end
-        global.linked_chests[entity.unit_number] = nil
-        -- if chest.valid then
-        --     global.source_chests[chest.unit_number] = nil
-        -- end
+local function remove_linked_chest(event)
+    local entity = event.entity
+
+    if not (global.linked_chests and global.linked_chests[entity.unit_number]) then
+        return
     end
+
+    local chest = global.linked_chests[entity.unit_number]
+    if not (chest and chest.valid) then
+        return
+    end
+
+    local chest_inventory = chest.get_inventory(defines.inventory.chest)
+
+    if chest_inventory.is_empty() then
+        chest.destroy()
+    else
+        local player = game.get_player(event.player_index)
+        if not player then
+            return
+        end
+
+        local player_inventory = player.get_main_inventory()
+        if not (player_inventory and player_inventory.valid) then
+            return
+        end
+
+        for name, count in pairs(chest_inventory.get_contents()) do
+            local insert_result = player_inventory.insert({name = name, count = count})
+            chest_inventory.remove({name = name, count = insert_result})
+        end
+
+        if chest_inventory.is_empty() then
+            chest.destroy()
+        end
+    end
+
+    global.linked_chests[entity.unit_number] = nil
 end
 
-script.on_event(defines.events.on_entity_died, function(event)
-    remove_linked_chest(event.entity)
-end)
-
-script.on_event(defines.events.on_player_mined_entity, function(event)
-    remove_linked_chest(event.entity)
-end)
-
-script.on_event(defines.events.on_robot_mined_entity, function(event)
-    remove_linked_chest(event.entity)
-end)
+script.on_event(defines.events.on_entity_died, remove_linked_chest)
+script.on_event(defines.events.on_player_mined_entity, remove_linked_chest)
+script.on_event(defines.events.on_robot_mined_entity, remove_linked_chest)
