@@ -3,21 +3,33 @@ local function add_chest_to_station(entity)
     local position = entity.position
 
     local chest_position;
+    local combi_position
 
     if entity.direction == 0 then --SN
         chest_position = {x = position.x - 1, y = position.y - 1}
+        combi_position = {x = position.x + 0, y = position.y - 1}
+        combi_direction = defines.direction.north
     elseif entity.direction == 2 then --WE
         chest_position = {x = position.x + 0, y = position.y - 1}
+        combi_position = {x = position.x + 0, y = position.y + 0}
+        combi_direction = defines.direction.east
     elseif entity.direction == 4 then --NS
         chest_position = {x = position.x + 0, y = position.y + 0}
+        combi_position = {x = position.x - 1, y = position.y + 0}
+        combi_direction = defines.direction.south
     elseif entity.direction == 6 then --EW
         chest_position = {x = position.x - 1, y = position.y + 0}
+        combi_position = {x = position.x - 1, y = position.y - 1}
+        combi_direction = defines.direction.west
     else
         print("error")
     end
 
+    local chest
+    local combi
+
     if surface.can_place_entity{name = "storage-chest", position = chest_position} then
-        local chest = surface.create_entity{
+        chest = surface.create_entity{
             name = "storage-chest",
             position = chest_position,
             force = entity.force,
@@ -33,6 +45,40 @@ local function add_chest_to_station(entity)
         global.linked_chests[entity.unit_number] = chest
     else
         print("error")
+    end
+
+    if surface.can_place_entity{name = "station-decider-combinator", position = combi_position} then
+        combi = surface.create_entity{
+            name = "station-decider-combinator",
+            position = combi_position,
+            direction = combi_direction,
+            force = entity.force,
+            create_build_effect_smoke = false
+        }
+
+        combi.destructible = false
+        combi.minable = false
+
+        if not global.linked_combis then
+            global.linked_combis = {}
+        end
+        global.linked_combis[entity.unit_number] = combi
+    else
+        print("error")
+    end
+
+    if chest and combi then
+        chest.connect_neighbour({
+            wire=defines.wire_type.red,
+            target_entity=combi,
+            target_circuit_id=defines.circuit_connector_id.combinator_input,
+        })
+
+        combi.connect_neighbour({
+            wire=defines.wire_type.red,
+            target_entity=entity,
+            source_circuit_id=defines.circuit_connector_id.combinator_output,
+        })
     end
 end
 
