@@ -53,7 +53,26 @@ local function add_chest_to_station(entity)
             position = combi_position,
             direction = combi_direction,
             force = entity.force,
-            create_build_effect_smoke = false
+            create_build_moke = false
+        }
+
+        local control_behavior = combi.get_or_create_control_behavior()
+
+        control_behavior.parameters = {
+            output_signal = {type = "virtual", name = "signal-check"},
+            copy_count_from_input = false
+        }
+
+        control_behavior = entity.get_or_create_control_behavior()
+
+        control_behavior.enable_disable = true
+        control_behavior.read_from_train = false
+        control_behavior.circuit_condition = {
+            condition = {
+                comparator = ">",
+                first_signal = {type = "virtual", name = "signal-check"},
+                constant = 0,
+            }
         }
 
         combi.destructible = false
@@ -143,6 +162,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     local entity = event.created_entity
 
     if entity.name == "train-stop-from-train" or entity.name == "train-stop-to-train" then
+        entity.trains_limit = 1
         add_chest_to_station(entity)
     end
 
