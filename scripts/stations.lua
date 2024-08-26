@@ -159,6 +159,12 @@ local function remove_empty_chests()
         local chests = surface.find_entities_filtered{name = "storage-chest"}
         for _, chest in pairs(chests) do
             if chest and chest.valid then
+                for _, linked_chest in pairs(global.linked_chests) do
+                    if linked_chest == chest then
+                        return
+                    end
+                end
+
                 local chest_inventory = chest.get_inventory(defines.inventory.chest)
 
                 if chest_inventory and chest_inventory.is_empty() then
